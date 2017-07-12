@@ -1,3 +1,5 @@
+
+import bcrypt
 import flask
 import pymysql
 import pymysql.cursors
@@ -13,7 +15,7 @@ db = pymysql.connect(
 @app.route('/test')
 def test():
     with db.cursor() as cur:
-        cur.execute("SELECT * FROM users;")
+        cur.execute("SELECT col FROM test;")
         result, = cur.fetchone()
         return flask.jsonify({
             'result': result,
