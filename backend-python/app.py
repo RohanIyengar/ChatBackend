@@ -1,4 +1,3 @@
-
 import bcrypt
 import flask
 import pymysql
@@ -21,3 +20,11 @@ def test():
             'result': result,
             'backend': 'python',
         })
+
+@app.route('/register/')
+def register(username='rohan', password='anicepassword'):
+    with db.cursor() as cur:
+        salt = bcrypt.gensalt()
+        sql = "INSERT INTO Users VALUES(%s,%s,%s)"
+        cur.execute(sql, (username, salt, password))
+        db.commit()
