@@ -55,3 +55,36 @@ def authenticate(username='rohan', raw_password='sample'):
         combined_password = raw_password + result_set['salt'] + secret_key
         hashed_password = result_set['passwordhash']
         return bcrypt.hashpw(combined_password, hashed_password) == hashed_password
+
+#This method stores a sent message, exposing the http endpoint for the frontend
+#to call. There should be three frontend methods to send the three different
+#types of messages, each setting values that aren't used to the null equivalent
+#for each value.
+@app.route('/send_message', methods=['GET'])
+def send_message():
+    #Get all fields from incoming json request
+    text = request.args.get('text')
+    if (text == None || len(text > 1000)):
+        raise ValueError("Text can only be up to 1000 characters")
+    width = request.args.get('width')
+    height = request.args.get('height')
+    duration = request.args.get('duration')
+    video_source = request.args.get('videosource')
+    sender = request.args.get('sender')
+    if (sender == None):
+        raise ValueError("Cannot have no sender on a message")
+    receiver = request.args.get('receiver')
+    if (sender == None):
+        raise ValueError("Cannot have no receiver on a message")
+    with db.cursor() as cur:
+        sql = "INSERT INTO Messages VALUES(%s,%d,%d,%s,%s,%s,%s)"
+        cur.execute(sql, (text, width, height, duration, video_source, sender, receiver))
+        db.commit()
+
+@app.route('/fetch_message', methods=['GET'])
+def fetch_message():
+    #Get all fields from incoming json request -- should only be 2 ints
+    per_page = request.args.get('requestsperpage')
+    if (per_page == None):
+        raise ValueError("Text can only be up to 100 0characters")
+    page_number = request.args.get('page')

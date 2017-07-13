@@ -10,10 +10,11 @@ CREATE TABLE Users(
 );
 
 CREATE TABLE Messages(
-    text VARCHAR(100) NOT NULL,
+    text VARCHAR(1000) NOT NULL,
     width INT,
     height INT,
     duration TIME,
+    videosource VARCHAR(50),
     sender VARCHAR(15) NOT NULL references Users.username,
     receiver VARCHAR(15) NOT NULL references Users.username,
     PRIMARY KEY(sender, receiver)
