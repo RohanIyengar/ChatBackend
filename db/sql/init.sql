@@ -17,6 +17,7 @@ CREATE TABLE Messages(
     videosource VARCHAR(50),
     sender VARCHAR(15) NOT NULL references Users.username,
     receiver VARCHAR(15) NOT NULL references Users.username,
+    senttime TIME DEFAULT NOW(),
     PRIMARY KEY(sender, receiver)
 );
 

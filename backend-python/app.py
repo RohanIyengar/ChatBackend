@@ -81,10 +81,32 @@ def send_message():
         cur.execute(sql, (text, width, height, duration, video_source, sender, receiver))
         db.commit()
 
+#Gets the paginated list of messages between sender and receiver specified
+#(or vice versa)
 @app.route('/fetch_message', methods=['GET'])
 def fetch_message():
-    #Get all fields from incoming json request -- should only be 2 ints
+    sender = request.args.get('sender')
+    if (sender == None):
+        raise ValueError("Cannot have no sender on a message")
+    receiver = request.args.get('receiver')
+    if (sender == None):
+        raise ValueError("Cannot have no receiver on a message")
+    #Get all fields from incoming json request
     per_page = request.args.get('requestsperpage')
-    if (per_page == None):
-        raise ValueError("Text can only be up to 100 0characters")
     page_number = request.args.get('page')
+    header = "SET @rank=0\n\n"
+    select = "SELECT @rank:=rank+1 AS rank, text, senttime FROM MESSAGES "
+    where_clause1 = "WHERE (sender = %s and receiver = %s) "
+    where_clause2 = "OR (sender = %s and receiver = %s)"
+    optional_where_clause = ""
+    if (per_page != None and page_number != None):
+        pagination = "WHERE rank BETWEEN %d and %d" % ((page_number-1), (page_number-1) + per_page)
+        optional_where_clause = optional_where_clause + pagination
+    order_by = "ORDER BY sentime asc"
+    sql = header + select + where_clause1 + where_clause2 + optional_where_clause + order_by
+    with db.cursor(cursors.DictCursor) as cur:
+        cur.execute(sql, (sender, receiver, receiver, sender))
+        result_set = cursor.fetchall()
+        if not result_set:
+            raise ValueError("No messages found between users %s and %s" % sender, receiver)
+        return result_set
